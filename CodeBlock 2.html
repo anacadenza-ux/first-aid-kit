@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Аптечка в горы — чек-лист альпиниста</title>
+    <meta charset="UTF-8">
+    <!-- PROTECTED: meta type -->
+    <meta name="type" value="app" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Аптечка в горы — чек-лист альпиниста">
+    <meta property="og:description" content="Интерактивный чек-лист горной аптечки из 11 групп и карточка-памятка для печати.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#F4F1EB; --surface:#FFFDF9; --text:#1C1A17; --muted:#6B655C;
+            --line:#E3DDD2; --accent:#C2410C; --accent-soft:#FBEDE5; --ok:#2F6B4F;
+            --r:16px;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        html{scroll-behavior:smooth}
+        body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+        .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+        /* Hero */
+        header.hero{padding:72px 0 40px}
+        .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+        .eyebrow i{color:var(--accent)}
+        h1{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(34px,5.4vw,64px);line-height:1.05;letter-spacing:-.02em;margin:18px 0 22px;color:var(--text);max-width:900px}
+        .lead{font-size:18px;color:var(--muted);max-width:680px}
+        .lead b{color:var(--text);font-weight:700}
+        .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:40px;padding:20px 24px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+        .progress{flex:1;min-width:220px}
+        .progress-top{display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--muted);margin-bottom:10px}
+        .progress-top strong{color:var(--text)}
+        .bar{height:6px;background:#ECE6DB;border-radius:99px;overflow:hidden}
+        .bar span{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s ease}
+        .btn{display:inline-flex;align-items:center;gap:8px;font:600 14px 'Manrope',sans-serif;padding:11px 18px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer;transition:.2s;text-decoration:none}
+        .btn i{color:inherit}
+        .btn:hover{border-color:var(--text)}
+        .btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+        .btn.primary:hover{background:var(--accent);border-color:var(--accent)}
+        .chips{display:flex;gap:6px;background:#ECE6DB;padding:4px;border-radius:10px}
+        .chip{font:600 13px 'Manrope',sans-serif;border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:7px;cursor:pointer;transition:.2s}
+        .chip.active{background:var(--surface);color:var(--text)}
+        /* Grid */
+        .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;padding:20px 0 80px}
+        .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:32px;display:flex;flex-direction:column;transition:border-color .25s, transform .25s}
+        .card:hover{border-color:#CFC7B9}
+        .card.done{border-color:#BFD6C8}
+        .card-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:14px}
+        .num{font-family:'Unbounded',sans-serif;font-weight:500;font-size:14px;color:var(--muted);min-width:28px;padding-top:4px}
+        .ico{width:48px;height:48px;flex-shrink:0;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center}
+        .ico i{color:var(--accent);font-size:20px}
+        .card.done .ico{background:#E4F0E9}
+        .card.done .ico i{color:var(--ok)}
+        .card h2{font-size:21px;font-weight:800;line-height:1.25;color:var(--text);letter-spacing:-.01em}
+        .count{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}
+        .card.done .count{color:var(--ok)}
+        .intro{color:var(--muted);font-size:15px;margin:4px 0 20px}
+        ul.items{list-style:none;display:flex;flex-direction:column;gap:2px}
+        .item label{display:flex;gap:14px;padding:14px 12px;margin:0 -12px;border-radius:10px;cursor:pointer;transition:background .2s}
+        .item label:hover{background:#F6F2EA}
+        .item input{position:absolute;opacity:0;pointer-events:none}
+        .box{width:22px;height:22px;flex-shrink:0;border:1.5px solid #C9C1B3;border-radius:6px;display:grid;place-items:center;margin-top:1px;transition:.2s;background:#fff}
+        .box i{font-size:11px;color:#fff;opacity:0;transform:scale(.5);transition:.2s}
+        .item input:checked + .box{background:var(--ok);border-color:var(--ok)}
+        .item input:checked + .box i{opacity:1;transform:scale(1)}
+        .item input:focus-visible + .box{outline:2px solid var(--accent);outline-offset:2px}
+        .i-name{font-weight:700;font-size:15.5px;color:var(--text);transition:color .2s}
+        .i-ex{font-weight:500;color:var(--muted)}
+        .i-desc{font-size:14px;color:var(--muted);margin-top:3px}
+        .item input:checked ~ div .i-name{color:var(--muted);text-decoration:line-through;text-decoration-color:#B8B0A2}
+        .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:2px}
+        .note{display:flex;gap:12px;margin-top:18px;padding:14px 16px;border-radius:10px;font-size:14px;line-height:1.5}
+        .note i{margin-top:3px}
+        .note.warn{background:#FBEDE5;color:#7A2E0C}
+        .note.warn i{color:var(--accent)}
+        .note.tip{background:#EEF2EC;color:#2B4A3A}
+        .note.tip i{color:var(--ok)}
+        .note.info{background:#F1EDE5;color:#4A453D}
+        .note.info i{color:var(--muted)}
+        .card .btn{margin-top:20px;align-self:flex-start}
+        .hidden{display:none!important}
+        /* Print section */
+        section.memo{padding:80px 0 100px;border-top:1px solid var(--line)}
+        .memo-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;margin-top:40px}
+        h3.sec{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(26px,3.4vw,40px);line-height:1.1;letter-spacing:-.02em;color:var(--text);margin:14px 0 16px}
+        form.f{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:32px;display:flex;flex-direction:column;gap:18px}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .fl label{display:block;font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px}
+        .fl input,.fl select,.fl textarea{width:100%;font:500 15px 'Manrope',sans-serif;color:var(--text);background:#FBF9F5;border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:.2s;resize:vertical}
+        .fl input:focus,.fl select:focus,.fl textarea:focus{outline:none;border-color:var(--text);background:#fff}
+        .check-guide{display:flex;gap:12px;align-items:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--text)}
+        .check-guide input{width:18px;height:18px;accent-color:var(--ok)}
+        .actions{display:flex;gap:10px;flex-wrap:wrap}
+        .preview-wrap{position:sticky;top:24px}
+        .preview-label{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+        #printCard{background:#fff;border:1.5px dashed #BDB4A5;border-radius:14px;padding:28px;color:#111}
+        .pc-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:2px solid #111;margin-bottom:18px}
+        .pc-title{font-family:'Unbounded',sans-serif;font-weight:700;font-size:16px;letter-spacing:.02em;color:#111}
+        .pc-sub{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.08em}
+        .pc-head i{font-size:26px;color:var(--accent)}
+        .pc-name{font-size:18px;font-weight:800;margin-bottom:16px;color:#111}
+        .pc-blood{display:flex;align-items:center;gap:16px;background:#F6F2EA;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+        .pc-blood .big{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;color:var(--accent);line-height:1}
+        .pc-blood small{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555}
+        .pc-blood span{font-weight:700;color:#111}
+        .pc-f{margin-bottom:14px}
+        .pc-f small{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555;margin-bottom:3px}
+        .pc-f div{font-size:14px;font-weight:600;color:#111;white-space:pre-wrap;word-break:break-word}
+        .pc-f.alert div{color:#9A2E06}
+        .pc-foot{font-size:11px;color:#666;border-top:1px solid #ddd;padding-top:12px;margin-top:6px}
+        .empty{color:#AAA29A!important;font-weight:500!important}
+        footer{padding:32px 0 48px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+        .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--text);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.3s}
+        .toast.show{opacity:1;transform:translate(-50%,0)}
+        @media (max-width:860px){
+            .grid,.memo-grid{grid-template-columns:1fr}
+            .preview-wrap{position:static}
+            .card,form.f{padding:24px}
+            header.hero{padding:48px 0 28px}
+        }
+        @media (max-width:520px){.row{grid-template-columns:1fr}.num{display:none}}
+        @media print{
+            @page{margin:12mm}
+            body{background:#fff}
+            body *{visibility:hidden}
+            #printCard,#printCard *{visibility:visible}
+            #printCard{position:absolute;left:0;top:0;width:120mm;border:1.5px dashed #888;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        }
+    </style>
+</head>
+<body>
+    <header class="hero wrap">
+        <span class="eyebrow"><i class="fa-solid fa-mountain-sun"></i> Подготовка к экспедиции</span>
+        <h1>Собираем аптечку в горы</h1>
+        <p class="lead">Ниже — расширенный список из 11 групп. Вы можете адаптировать его под себя, но мы <b>настоятельно рекомендуем не исключать ни одну из базовых групп препаратов</b>. Отмечайте собранное — прогресс сохранится.</p>
+
+        <div class="toolbar">
+            <div class="progress">
+                <div class="progress-top"><span>Собрано</span><strong id="progText">0 из 0</strong></div>
+                <div class="bar"><span id="progBar"></span></div>
+            </div>
+            <div class="chips">
+                <button class="chip active" data-filter="all">Все</button>
+                <button class="chip" data-filter="todo">Не собрано</button>
+            </div>
+            <button class="btn" id="resetBtn"><i class="fa-solid fa-rotate-left"></i> Сбросить</button>
+            <a class="btn primary" href="#memo"><i class="fa-solid fa-id-card"></i> Карточка для печати</a>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <div class="grid" id="grid"></div>
+    </main>
+
+    <section class="memo" id="memo">
+        <div class="wrap">
+            <span class="eyebrow"><i class="fa-solid fa-print"></i> Информационная памятка</span>
+            <h3 class="sec">Карточка в карман</h3>
+            <p class="lead">Заполните, распечатайте, заламинируйте и положите в карман. <b>Обязательно предупредите гида</b> о наличии этой карточки.</p>
+
+            <div class="memo-grid">
+                <form class="f" id="memoForm" autocomplete="off">
+                    <div class="fl"><label for="fName">ФИО</label><input id="fName" name="name" placeholder="Иванов Иван Иванович"></div>
+                    <div class="row">
+                        <div class="fl"><label for="fBlood">Группа крови</label>
+                            <select id="fBlood" name="blood">
+                                <option value="">Не указана</option>
+                                <option value="O (I)">O (I)</option>
+                                <option value="A (II)">A (II)</option>
+                                <option value="B (III)">B (III)</option>
+                                <option value="AB (IV)">AB (IV)</option>
+                            </select>
+                        </div>
+                        <div class="fl"><label for="fRh">Резус-фактор</label>
+                            <select id="fRh" name="rh">
+                                <option value="">Не указан</option>
+                                <option value="Rh+">Положительный (Rh+)</option>
+                                <option value="Rh−">Отрицательный (Rh−)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fl"><label for="fChronic">Хронические заболевания</label><textarea id="fChronic" name="chronic" rows="2" placeholder="Например: гипертония, астма"></textarea></div>
+                    <div class="fl"><label for="fAllergy">Аллергии на препараты</label><textarea id="fAllergy" name="allergy" rows="2" placeholder="Например: Лидокаин"></textarea></div>
+                    <div class="row">
+                        <div class="fl"><label for="fContact">Доверенное лицо</label><input id="fContact" name="contact" placeholder="Имя, кем приходится"></div>
+                        <div class="fl"><label for="fPhone">Телефон</label><input id="fPhone" name="phone" placeholder="+7 900 000-00-00"></div>
+                    </div>
+                    <label class="check-guide"><input type="checkbox" id="fGuide" name="guide"> Гид предупреждён о карточке</label>
+                    <div class="actions">
+                        <button type="button" class="btn primary" id="printBtn"><i class="fa-solid fa-print"></i> Распечатать карточку</button>
+                        <button type="button" class="btn" id="clearMemo"><i class="fa-solid fa-eraser"></i> Очистить</button>
+                    </div>
+                </form>
+
+                <div class="preview-wrap">
+                    <div class="preview-label">Предпросмотр</div>
+                    <div id="printCard">
+                        <div class="pc-head">
+                            <div>
+                                <div class="pc-title">МЕДИЦИНСКАЯ КАРТОЧКА</div>
+                                <div class="pc-sub">Emergency medical info</div>
+                            </div>
+                            <i class="fa-solid fa-kit-medical"></i>
+                        </div>
+                        <div class="pc-name" id="pName">—</div>
+                        <div class="pc-blood">
+                            <div class="big" id="pBlood">?</div>
+                            <div><small>Группа крови / Blood type</small><span id="pBloodTxt">Не указана</span></div>
+                        </div>
+                        <div class="pc-f"><small>Хронические заболевания / Chronic conditions</small><div id="pChronic">—</div></div>
+                        <div class="pc-f alert"><small>Аллергии на препараты / Drug allergies</small><div id="pAllergy">—</div></div>
+                        <div class="pc-f"><small>Экстренный контакт / Emergency contact</small><div id="pContact">—</div></div>
+                        <div class="pc-foot">Карточку носить в кармане. Гид проинформирован.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer><div class="wrap">Материал носит информационный характер. Перед поездкой проконсультируйтесь с лечащим врачом.</div></footer>
+    <div class="toast" id="toast"></div>
+
+    <script>
+    const DATA = [
+        {t:'Препараты от горной болезни', ic:'fa-mountain', intro:'Это специфика альпинизма. Препараты нужны как для профилактики, так и для экстренной помощи при отёках мозга или лёгких.', items:[
+            {n:'Ацетазоламид', ex:'Диакарб', d:'Профилактика и помощь в акклиматизации.'},
+            {n:'Сальметерол', d:'Профилактика и помощь в акклиматизации.'},
+            {n:'Дексаметазон', d:'Препарат экстренной медицины для лечения тяжёлых проявлений горной болезни.', must:1}
+        ]},
+        {t:'Обезболивающие, жаропонижающие и спазмолитики', ic:'fa-pills', intro:'Подбирайте те препараты, которые гарантированно работают на вашем организме и не вызывают аллергии.', items:[
+            {n:'НПВС', ex:'Ибупрофен, Диклофенак, Нимесулид', d:'От лёгких до сильнодействующих. Снимут головную боль (частый спутник горной болезни), собьют температуру при лихорадке, купируют суставную и мышечную боль.'},
+            {n:'Спазмолитики', ex:'Дротаверин, Мебеверин', d:'Снимают спазмы гладкой мускулатуры (например, резкие боли в животе), с которыми обычные обезболивающие справляются хуже.'}
+        ]},
+        {t:'Антибиотики', ic:'fa-capsules', intro:'В условиях экспедиции бактериальные инфекции развиваются стремительно.', items:[
+            {n:'Широкого спектра', ex:'Амоксициллин', d:'Базовая помощь при воспалениях дыхательных путей или дёсен.'},
+            {n:'Нового поколения', ex:'Азитромицин', d:'Для более сложных случаев.'},
+            {n:'Кишечный антибиотик', ex:'Рифаксимин', d:'Желудочно-кишечные инфекции в горах — крайне частое явление.', must:1}
+        ]},
+        {t:'Желудочно-кишечный тракт', ic:'fa-bowl-food', intro:'Гипоксия, непривычная вода и специфическая еда (сублиматы, местные блюда) часто дают сбой в работе ЖКТ.', items:[
+            {n:'Регидратационные соли', ex:'Регидрон', d:'При диарее или рвоте восстановят водно-солевой баланс лучше обычного изотоника.'},
+            {n:'Ферменты', ex:'Мезим, Креон, Панкреатин', d:'Помогут переварить тяжёлую или непривычную пищу.'},
+            {n:'Антациды', ex:'Ренни, Алмагель А, Гевискон', d:'Защитят слизистую желудка от повышенной кислотности.'},
+            {n:'Сорбенты', ex:'активированный уголь', d:'При отравлениях. Только таблетированные формы.'}
+        ], notes:[{type:'warn', ic:'fa-snowflake', text:'Гелевые сорбенты (типа Энтеросгеля) на высоте могут просто замёрзнуть.'}]},
+        {t:'Антисептики и перевязочные материалы', ic:'fa-bandage', intro:'Травмы, порезы и ушибы мягких тканей в горах случаются регулярно.', items:[
+            {n:'Антисептики', d:'Для промывания ран.'},
+            {n:'Перевязочные материалы и пластыри'},
+            {n:'Антибактериальная мазь', d:'Наносится под повязку, чтобы избежать инфицирования раны в долгой экспедиции.'},
+            {n:'Гемостатическая губка', d:'Для быстрой остановки крови при глубоких порезах.'},
+            {n:'Кинезиотейпы', d:'Фиксация суставов, защита лица от обморожений там, где маска или очки прилегают неплотно, профилактика мозолей на стопах.'}
+        ]},
+        {t:'Аллергия и отёки', ic:'fa-hand-dots', intro:'Даже если вы не аллергик, незнакомая пыльца, насекомые или еда в новой стране могут спровоцировать анафилактический шок.', items:[
+            {n:'Антигистаминные в таблетках', ex:'Эриус', d:'Для лёгких случаев.'},
+            {n:'Антигистаминные в ампулах', d:'Для экстренного снятия сильного отёка.', must:1}
+        ], notes:[{type:'info', ic:'fa-circle-info', text:'Берите антигистаминные обязательно в двух форматах.'}]},
+        {t:'Уши, горло, глаза', ic:'fa-eye', intro:'Переохлаждение и агрессивный ультрафиолет бьют по самым уязвимым местам.', items:[
+            {n:'Препараты для горла', ex:'леденцы, спреи'},
+            {n:'Ушные капли', ex:'Отипакс', d:'Ушная боль в горах невыносима и часто приводит к вынужденной эвакуации.'},
+            {n:'Глазные капли', ex:'Дексаметазон', d:'Первая помощь при ожоге роговицы (снежной слепоте). Снимут воспаление и предотвратят временную потерю зрения.'}
+        ], notes:[{type:'warn', ic:'fa-glasses', text:'Снежная слепота возникает из-за плохой оптики или неплотного прилегания очков.'}]},
+        {t:'Ампульные (инъекционные) формы', ic:'fa-syringe', intro:'Для экстренных ситуаций (травмы, шок), когда нужна максимальная скорость действия препарата.', items:[
+            {n:'Антигистаминные в ампулах'},
+            {n:'Обезболивающие в ампулах'},
+            {n:'Дексаметазон в ампулах'},
+            {n:'Местные анестетики', ex:'Новокаин, Лидокаин', d:'Локальное обезболивание — например, при критических мозолях, когда человек не может идти.'}
+        ], notes:[{type:'tip', ic:'fa-lightbulb', text:'Лайфхак: если нет возможности сделать укол, содержимое ампулы можно выпить — биодоступность всё равно будет выше, чем у таблетки.'}]},
+        {t:'Защита от солнца, гигиена и сон', ic:'fa-sun', intro:'Кожа не должна напрямую контактировать с морозом и солнцем.', items:[
+            {n:'Солнцезащитный крем SPF 50–100', d:'Наносите каждые полчаса.'},
+            {n:'Гигиеническая помада с SPF'},
+            {n:'Бафф и балаклава'},
+            {n:'Санитайзеры', d:'Защита от вирусов и бактерий в условиях плохой гигиены.'},
+            {n:'Мелатонин', ex:'Мелаксен', d:'Поможет наладить сон на высоте.'}
+        ], notes:[{type:'warn', ic:'fa-triangle-exclamation', text:'Классические сильные снотворные в горах использовать категорически не рекомендуется!'}]},
+        {t:'Дополнительное оборудование', ic:'fa-toolbox', intro:'Лёгкие приборы и средства, которые решают критические задачи.', items:[
+            {n:'Пульсоксиметр', d:'Базовый прибор для оценки акклиматизации (уровня кислорода в крови).'},
+            {n:'Термометр', d:'Поможет отличить банальную усталость от начала воспалительного процесса.'},
+            {n:'Спасательное изотермическое одеяло', d:'Ничего не весит, но спасёт при переохлаждении во время непредвиденной «холодной ночёвки».'},
+            {n:'Таблетки для обеззараживания воды', d:'Если придётся пить из сомнительных источников.'}
+        ], notes:[{type:'tip', ic:'fa-bottle-water', text:'Альтернатива таблеткам — пить только бутилированную воду с запечатанной крышкой.'}]},
+        {t:'Личные препараты и памятка', ic:'fa-user-doctor', intro:'Если у вас есть хронические заболевания (гипертония, диабет, астма и т.д.), всё личное должно быть с собой с запасом.', items:[
+            {n:'Личные препараты с запасом'},
+            {n:'Личные приборы', ex:'тонометр, глюкометр'},
+            {n:'Консультация с лечащим врачом', d:'Возможно, он скорректирует дозировки для высоты.', must:1},
+            {n:'Карточка-памятка в кармане', d:'Группа крови, хронические заболевания, аллергии, экстренный контакт.'}
+        ], link:true}
+    ];
+
+    const KEY='mountain-kit-v1', MEMO='mountain-kit-memo-v1';
+    let checked = new Set(JSON.parse(localStorage.getItem(KEY)||'[]'));
+    let filter='all';
+    const grid=document.getElementById('grid');
+    const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    function render(){
+        grid.innerHTML = DATA.map((s,si)=>{
+            const items = s.items.map((it,ii)=>{
+                const id=si+'-'+ii;
+                return `<li class="item" data-id="${id}"><label>
+                    <input type="checkbox" data-id="${id}" ${checked.has(id)?'checked':''}>
+                    <span class="box"><i class="fa-solid fa-check"></i></span>
+                    <div><div class="i-name">${esc(it.n)}${it.ex?` <span class="i-ex">— ${esc(it.ex)}</span>`:''}${it.must?'<span class="tag">обязательно</span>':''}</div>
+                    ${it.d?`<div class="i-desc">${esc(it.d)}</div>`:''}</div>
+                </label></li>`;
+            }).join('');
+            const notes=(s.notes||[]).map(n=>`<div class="note ${n.type}"><i class="fa-solid ${n.ic}"></i><span>${esc(n.text)}</span></div>`).join('');
+            return `<article class="card" data-s="${si}">
+                <div class="card-head">
+                    <span class="num">${String(si+1).padStart(2,'0')}</span>
+                    <div class="ico"><i class="fa-solid ${s.ic}"></i></div>
+                    <div><h2>${esc(s.t)}</h2><div class="count"></div></div>
+                </div>
+                <p class="intro">${esc(s.intro)}</p>
+                <ul class="items">${items}</ul>
+                ${notes}
+                ${s.link?'<a class="btn" href="#memo"><i class="fa-solid fa-id-card"></i> Заполнить карточку</a>':''}
+            </article>`;
+        }).join('');
+        update();
+    }
+
+    function update(){
+        let total=0, done=0;
+        DATA.forEach((s,si)=>{
+            const card=grid.querySelector(`.card[data-s="${si}"]`);
+            let d=0;
+            s.items.forEach((_,ii)=>{
+                const id=si+'-'+ii, li=card.querySelector(`li[data-id="${id}"]`);
+                const c=checked.has(id); if(c)d++;
+                li.classList.toggle('hidden', filter==='todo' && c);
+            });
+            total+=s.items.length; done+=d;
+            const full=d===s.items.length;
+            card.classList.toggle('done', full);
+            card.querySelector('.count').innerHTML = full?'<i class="fa-solid fa-circle-check"></i> Группа собрана':`${d} из ${s.items.length}`;
+            card.classList.toggle('hidden', filter==='todo' && full);
+        });
+        document.getElementById('progText').textContent=`${done} из ${total}`;
+        document.getElementById('progBar').style.width=(total?done/total*100:0)+'%';
+    }
+
+    grid.addEventListener('change',e=>{
+        const id=e.target.dataset.id; if(!id)return;
+        e.target.checked?checked.add(id):checked.delete(id);
+        localStorage.setItem(KEY,JSON.stringify([...checked]));
+        update();
+    });
+    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+        document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); filter=b.dataset.filter; update();
+    }));
+    let resetArmed=false;
+    document.getElementById('resetBtn').addEventListener('click',function(){
+        if(!resetArmed){resetArmed=true;this.innerHTML='<i class="fa-solid fa-check"></i> Точно сбросить?';setTimeout(()=>{resetArmed=false;this.innerHTML='<i class="fa-solid fa-rotate-left"></i> Сбросить'},3000);return;}
+        resetArmed=false;checked.clear();localStorage.removeItem(KEY);render();
+        this.innerHTML='<i class="fa-solid fa-rotate-left"></i> Сбросить';toast('Чек-лист сброшен');
+    });
+
+    /* Memo card */
+    const form=document.getElementById('memoForm');
+    const set=(id,val,ph)=>{const el=document.getElementById(id);el.textContent=val||ph;el.classList.toggle('empty',!val)};
+    function updateCard(){
+        const f=Object.fromEntries(new FormData(form));
+        f.guide=document.getElementById('fGuide').checked;
+        set('pName',f.name,'ФИО не указано');
+        document.getElementById('pBlood').textContent=f.blood?(f.blood.split(' ')[0]+(f.rh?f.rh.replace('Rh',''):'')):'?';
+        set('pBloodTxt',[f.blood,f.rh].filter(Boolean).join(', '),'Не указана');
+        set('pChronic',f.chronic.trim(),'Нет / не указано');
+        set('pAllergy',f.allergy.trim(),'Нет / не указано');
+        set('pContact',[f.contact.trim(),f.phone.trim()].filter(Boolean).join('\n'),'Не указан');
+        document.querySelector('.pc-foot').textContent=f.guide?'Карточку носить в кармане. Гид проинформирован.':'Карточку носить в кармане. Предупредите гида о её наличии.';
+        localStorage.setItem(MEMO,JSON.stringify(f));
+    }
+    (function load(){
+        const m=JSON.parse(localStorage.getItem(MEMO)||'{}');
+        ['name','blood','rh','chronic','allergy','contact','phone'].forEach(k=>{if(m[k]!=null)form.elements[k].value=m[k]});
+        document.getElementById('fGuide').checked=!!m.guide;
+    })();
+    form.addEventListener('input',updateCard);
+    form.addEventListener('change',updateCard);
+    document.getElementById('printBtn').addEventListener('click',()=>{
+        if(!document.getElementById('fGuide').checked) toast('Не забудьте предупредить гида о карточке');
+        setTimeout(()=>window.print(),300);
+    });
+    document.getElementById('clearMemo').addEventListener('click',()=>{form.reset();updateCard();toast('Карточка очищена')});
+
+    function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200)}
+
+    render(); updateCard();
+    </script>
+</body>
+</html>
